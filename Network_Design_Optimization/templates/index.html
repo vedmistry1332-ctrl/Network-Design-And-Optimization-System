@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Cloud Data Center Network Optimizer
+    </title>
+
+
+    <!-- CSS -->
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+
+    <!-- Cytoscape -->
+
+    <script
+        src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js">
+    </script>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     HEADER
+====================================================== -->
+
+<header class="header">
+
+    <div class="header-content">
+
+        <div>
+
+            <h1>
+                ☁ Cloud Data Center
+                Network Optimizer
+            </h1>
+
+            <p>
+                Graph-based network optimization using
+                Prim's, Kruskal's and Dijkstra's algorithms
+            </p>
+
+        </div>
+
+        <div class="status">
+
+            <span class="status-dot"></span>
+
+            System Ready
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- =====================================================
+     MAIN CONTAINER
+====================================================== -->
+
+<main class="container">
+
+
+    <!-- =================================================
+         DASHBOARD CARDS
+    ================================================== -->
+
+    <section class="stats-grid">
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                🖥️
+            </div>
+
+            <div>
+
+                <span>
+                    Data Centers
+                </span>
+
+                <strong id="nodeCount">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                🔗
+            </div>
+
+            <div>
+
+                <span>
+                    Connections
+                </span>
+
+                <strong id="connectionCount">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                💰
+            </div>
+
+            <div>
+
+                <span>
+                    Minimum Network Cost
+                </span>
+
+                <strong id="dashboardCost">
+                    -
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                ⚡
+            </div>
+
+            <div>
+
+                <span>
+                    Network Status
+                </span>
+
+                <strong id="networkStatus">
+                    Not Optimized
+                </strong>
+
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+    <!-- =================================================
+         INPUT AREA
+    ================================================== -->
+
+    <section class="input-layout">
+
+
+        <!-- DATA CENTERS -->
+
+        <div class="card">
+
+            <div class="card-title">
+
+                <div>
+
+                    <h2>
+                        Data Centers
+                    </h2>
+
+                    <p>
+                        Add cloud data center nodes
+                    </p>
+
+                </div>
+
+                <span class="badge">
+                    NODES
+                </span>
+
+            </div>
+
+
+            <div class="input-group">
+
+                <input
+                    id="nodeName"
+                    type="text"
+                    placeholder="Example: SURAT"
+                >
+
+                <button
+                    onclick="addNode()"
+                    class="primary-btn"
+                >
+
+                    + Add Center
+
+                </button>
+
+            </div>
+
+
+            <div
+                id="nodeList"
+                class="list"
+            ></div>
+
+        </div>
+
+
+        <!-- CONNECTIONS -->
+
+        <div class="card">
+
+            <div class="card-title">
+
+                <div>
+
+                    <h2>
+                        Network Connections
+                    </h2>
+
+                    <p>
+                        Define links and connection costs
+                    </p>
+
+                </div>
+
+                <span class="badge">
+                    EDGES
+                </span>
+
+            </div>
+
+
+            <div class="connection-form">
+
+
+                <select id="sourceNode">
+
+                    <option value="">
+                        Source
+                    </option>
+
+                </select>
+
+
+                <select id="destinationNode">
+
+                    <option value="">
+                        Destination
+                    </option>
+
+                </select>
+
+
+                <input
+                    id="connectionCost"
+                    type="number"
+                    min="1"
+                    placeholder="Cost"
+                >
+
+
+                <button
+                    onclick="addConnection()"
+                    class="primary-btn"
+                >
+
+                    + Add
+
+                </button>
+
+
+            </div>
+
+
+            <div
+                id="connectionList"
+                class="list"
+            ></div>
+
+        </div>
+
+
+    </section>
+
+
+    <!-- =================================================
+         SHORTEST PATH
+    ================================================== -->
+
+    <section class="card shortest-section">
+
+
+        <div class="card-title">
+
+            <div>
+
+                <h2>
+                    🧭 Shortest Path Analysis
+                </h2>
+
+                <p>
+                    Find the minimum-cost route between
+                    two selected data centers
+                </p>
+
+            </div>
+
+            <span class="algorithm-badge dijkstra">
+                DIJKSTRA
+            </span>
+
+        </div>
+
+
+        <div class="path-form">
+
+
+            <div>
+
+                <label>
+                    Source Data Center
+                </label>
+
+                <select id="pathSource">
+
+                    <option value="">
+                        Select source
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="arrow">
+                →
+            </div>
+
+
+            <div>
+
+                <label>
+                    Destination Data Center
+                </label>
+
+                <select id="pathDestination">
+
+                    <option value="">
+                        Select destination
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <button
+                onclick="findShortestPath()"
+                class="path-btn"
+            >
+
+                Find Shortest Path
+
+            </button>
+
+        </div>
+
+
+        <!-- SHORTEST RESULT -->
+
+        <div
+            id="shortestPathResult"
+            class="shortest-result hidden"
+        >
+
+
+            <div class="path-display">
+
+                <span>
+                    Shortest Route
+                </span>
+
+                <strong id="shortestPath">
+                    -
+                </strong>
+
+            </div>
+
+
+            <div class="analysis-grid">
+
+
+                <div>
+
+                    <span>
+                        Path Cost
+                    </span>
+
+                    <strong id="shortestCost">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Hops
+                    </span>
+
+                    <strong id="shortestHops">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Execution Time
+                    </span>
+
+                    <strong id="shortestTime">
+                        -
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="complexity-box">
+
+                <h3>
+                    Dijkstra Analysis
+                </h3>
+
+                <div class="complexity-grid">
+
+                    <div>
+
+                        <span>
+                            Algorithm
+                        </span>
+
+                        <strong>
+                            Dijkstra
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Time Complexity
+                        </span>
+
+                        <strong>
+                            O((V + E) log V)
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Space Complexity
+                        </span>
+
+                        <strong>
+                            O(V + E)
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Purpose
+                        </span>
+
+                        <strong>
+                            Minimum-cost route
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =================================================
+         OPTIMIZE BUTTON
+    ================================================== -->
+
+    <section class="optimize-section">
+
+        <button
+            onclick="optimizeNetwork()"
+            class="optimize-btn"
+        >
+
+            ⚡ Optimize Entire Network
+
+        </button>
+
+
+        <button
+            onclick="resetNetwork()"
+            class="reset-btn"
+        >
+
+            ↻ Reset
+
+        </button>
+
+    </section>
+
+
+    <!-- =================================================
+         GRAPH
+    ================================================== -->
+
+    <section class="card graph-card">
+
+
+        <div class="card-title">
+
+            <div>
+
+                <h2>
+                    Network Visualization
+                </h2>
+
+                <p>
+                    Interactive representation of the
+                    cloud data center network
+                </p>
+
+            </div>
+
+
+            <div class="legend">
+
+                <span>
+                    <i class="normal-line"></i>
+                    Connection
+                </span>
+
+                <span>
+                    <i class="mst-line"></i>
+                    MST
+                </span>
+
+                <span>
+                    <i class="path-line"></i>
+                    Shortest Path
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div id="networkGraph"></div>
+
+
+    </section>
+
+
+    <!-- =================================================
+         MST RESULTS
+    ================================================== -->
+
+    <section
+        id="results"
+        class="card hidden"
+    >
+
+
+        <div class="card-title">
+
+            <div>
+
+                <h2>
+                    Minimum Spanning Tree Analysis
+                </h2>
+
+                <p>
+                    Comparison between Prim's and
+                    Kruskal's algorithms
+                </p>
+
+            </div>
+
+            <span class="algorithm-badge">
+                MST
+            </span>
+
+        </div>
+
+
+        <div class="algorithm-grid">
+
+
+            <!-- PRIM -->
+
+            <div class="algorithm-card">
+
+                <div class="algorithm-header">
+
+                    <h3>
+                        Prim's Algorithm
+                    </h3>
+
+                    <span>
+                        O(E log V)
+                    </span>
+
+                </div>
+
+
+                <div class="algorithm-value">
+
+                    <span>
+                        Minimum Cost
+                    </span>
+
+                    <strong id="primCost">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="algorithm-value">
+
+                    <span>
+                        Execution Time
+                    </span>
+
+                    <strong id="primTime">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <h4>
+                    Selected MST Edges
+                </h4>
+
+                <div
+                    id="primEdges"
+                    class="edge-list"
+                ></div>
+
+            </div>
+
+
+            <!-- KRUSKAL -->
+
+            <div class="algorithm-card">
+
+                <div class="algorithm-header">
+
+                    <h3>
+                        Kruskal's Algorithm
+                    </h3>
+
+                    <span>
+                        O(E log E)
+                    </span>
+
+                </div>
+
+
+                <div class="algorithm-value">
+
+                    <span>
+                        Minimum Cost
+                    </span>
+
+                    <strong id="kruskalCost">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="algorithm-value">
+
+                    <span>
+                        Execution Time
+                    </span>
+
+                    <strong id="kruskalTime">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <h4>
+                    Selected MST Edges
+                </h4>
+
+                <div
+                    id="kruskalEdges"
+                    class="edge-list"
+                ></div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- MST CONCLUSION -->
+
+        <div class="conclusion-box">
+
+            <h3>
+                Network Optimization Summary
+            </h3>
+
+            <p id="optimizationSummary">
+                -
+            </p>
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+<!-- =====================================================
+     JAVASCRIPT
+====================================================== -->
+
+<script
+    src="{{ url_for('static', filename='script.js') }}">
+</script>
+
+
+</body>
+
+</html>
